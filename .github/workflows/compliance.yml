@@ -1,4 +1,4 @@
-name: PR Title Compliance
+name: Compliance
 
 on:
   pull_request:
