@@ -1,4 +1,4 @@
-# Go Code Coverage Report 🏆
+# Go Code Coverage Report
 
 A Github action for generating test coverage reports for the Go programming language, that does not utilize third party services, making it suitable for use with private repos.
 
@@ -37,7 +37,7 @@ You'll receive an error similar to `Error: Command failed with exit code 128: gi
 ### Example Workflow
 
 ```yaml
-name: "Go Code Coverage Report 🏆"
+name: "Go Code Coverage Report"
 on:
   pull_request:
   push:
@@ -93,7 +93,7 @@ If you want to generate a badge to put in the readme, you could add an extra ste
         auth: ${{ secrets.COVERAGE_GIST_SECRET }}
         gistID: 788ds7a07299ab2728a33
         filename: coverage.json
-        label: Go Code Coverage Report 🏆
+        label: Go Code Coverage Report
         message: ${{ steps.coverage.outputs.coverage-pct-1dp }}%
         color: ${{ steps.coverage.outputs.meets-threshold == 'true' && 'green' || 'red' }}
 ```
