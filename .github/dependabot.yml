@@ -4,8 +4,20 @@ updates:
     directory: /
     schedule:
       interval: daily
+    cooldown:
+      default-days: 15
+    groups:
+      actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: daily
+    cooldown:
+      default-days: 15
+    groups:
+      npm:
+        patterns:
+          - "*"
