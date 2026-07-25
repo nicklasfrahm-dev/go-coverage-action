@@ -9,13 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check PR Title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          TITLE="${{ github.event.pull_request.title }}"
-          # Regex for: (feat|fix)(scope): description
-          # Requires scope in parenthesis.
-          # Example: feat(parser): something
-          # Example: fix(api): something
-          if [[ ! "$TITLE" =~ ^(feat|fix)(\([^)]+\)): [a-z].+$ ]]; then
+          if [[ ! "$PR_TITLE" =~ ^(feat|fix)(\([^)]+\)): [a-z].+$ ]]; then
             echo "Error: PR title must follow conventional commit format:"
             echo "See: https://www.conventionalcommits.org/"
             echo "Format: <type>(<scope>): <description>"
