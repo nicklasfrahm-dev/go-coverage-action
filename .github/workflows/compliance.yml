@@ -1,11 +1,11 @@
 name: Compliance
-
 on:
   pull_request:
     types: [opened, edited, synchronize]
 
 jobs:
   check-title:
+    name: Compliance Check
     runs-on: ubuntu-latest
     steps:
       - name: Check PR Title
@@ -22,3 +22,4 @@ jobs:
             echo "- Message must start lowercase"
             exit 1
           fi
+
