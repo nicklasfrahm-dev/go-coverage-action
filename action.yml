@@ -80,5 +80,5 @@ outputs:
   uncovered-packages:
     description: 'Number of Go packages with no test coverage'
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/index.js'
