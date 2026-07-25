@@ -1,4 +1,4 @@
-name: 'Go Coverage'
+name: 'Go Code Coverage Report'
 description: 'Generates Go coverage reports without third party services'
 inputs:
   token:
