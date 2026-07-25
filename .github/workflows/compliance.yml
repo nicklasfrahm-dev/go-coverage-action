@@ -5,8 +5,10 @@ on:
 
 jobs:
   check-title:
-    name: Compliance Check
+    name: Check title
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - name: Check PR Title
         env:
