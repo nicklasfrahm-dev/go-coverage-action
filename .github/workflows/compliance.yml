@@ -12,7 +12,8 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          if [[ ! "$PR_TITLE" =~ ^(feat|fix)(\([^)]+\)): [a-z].+$ ]]; then
+          REGEX='^(feat|fix)(\([^)]+\)): [a-z].+$'
+          if [[ ! "$PR_TITLE" =~ $REGEX ]]; then
             echo "Error: PR title must follow conventional commit format:"
             echo "See: https://www.conventionalcommits.org/"
             echo "Format: <type>(<scope>): <description>"
