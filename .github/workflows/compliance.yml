@@ -15,7 +15,13 @@ jobs:
           # Requires scope in parenthesis.
           # Example: feat(parser): something
           # Example: fix(api): something
-          if [[ ! "$TITLE" =~ ^(feat|fix)(\([^)]+\)):.+$ ]]; then
-            echo "Error: PR title must follow conventional commit format with type 'feat' or 'fix' and a scope. (e.g., 'feat(scope): description')"
+          if [[ ! "$TITLE" =~ ^(feat|fix)(\([^)]+\)): [a-z].+$ ]]; then
+            echo "Error: PR title must follow conventional commit format:"
+            echo "See: https://www.conventionalcommits.org/"
+            echo "Format: <type>(<scope>): <description>"
+            echo "- Must be a conventional commit"
+            echo "- Must use type 'feat' or 'fix'"
+            echo "- Must include a scope (e.g., 'feat(scope): description')"
+            echo "- Message must start lowercase"
             exit 1
           fi
