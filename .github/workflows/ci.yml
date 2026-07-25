@@ -117,6 +117,7 @@ jobs:
           cat <<EOF > .releaserc.json
           {
             "branches": ["main"],
+            "repositoryUrl": "https://github.com/${{ github.repository }}.git",
             "plugins": [
               "@semantic-release/commit-analyzer",
               "@semantic-release/release-notes-generator",
