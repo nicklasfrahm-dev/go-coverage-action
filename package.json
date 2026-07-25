@@ -21,7 +21,7 @@
         "Testing",
         "Coverage"
     ],
-    "author": "gwatts",
+    "author": "Nicklas Frahm <nicklas.frahm@gmail.com>",
     "license": "MIT",
     "bugs": {
         "url": "https://github.com/nicklasfrahm-dev/go-coverage-action/issues"
