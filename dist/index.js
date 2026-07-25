@@ -6035,7 +6035,7 @@ function hookChildProcess(cp, parsed) {
         // the command exists and emit an "error" instead
         // See https://github.com/IndigoUnited/node-cross-spawn/issues/16
         if (name === 'exit') {
-            const err = verifyENOENT(arg1, parsed, 'spawn');
+            const err = verifyENOENT(arg1, parsed);
 
             if (err) {
                 return originalEmit.call(cp, 'error', err);
@@ -6192,15 +6192,17 @@ function escapeArgument(arg, doubleEscapeMetaChars) {
     arg = `${arg}`;
 
     // Algorithm below is based on https://qntm.org/cmd
+    // It's slightly altered to disable JS backtracking to avoid hanging on specially crafted input
+    // Please see https://github.com/moxystudio/node-cross-spawn/pull/160 for more information
 
     // Sequence of backslashes followed by a double quote:
     // double up all the backslashes and escape the double quote
-    arg = arg.replace(/(\\*)"/g, '$1$1\\"');
+    arg = arg.replace(/(?=(\\+?)?)\1"/g, '$1$1\\"');
 
     // Sequence of backslashes followed by the end of the string
     // (which will become a double quote later):
     // double up all the backslashes
-    arg = arg.replace(/(\\*)$/, '$1$1');
+    arg = arg.replace(/(?=(\\+?)?)\1$/, '$1$1');
 
     // All other backslashes occur literally
 
@@ -33790,7 +33792,7 @@ function execaNode(scriptPath, args, options = {}) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"go-coverage-action","version":"1.0.0","description":"Coverage reports for the Go programming language","main":"index.js","scripts":{"lint":"eslint .","prettier":"prettier -c ./*.js","prepare":"ncc build index.js -o dist --source-map --license licenses.txt","all":"npm run lint && npm run prepare"},"repository":{"type":"git","url":"git+https://github.com/gwatts/go-coverage-action.git"},"keywords":["GitHub","Actions","Golang","Go","Testing","Coverage"],"author":"gwatts","license":"MIT","bugs":{"url":"https://github.com/gwatts/go-coverage-action/issues"},"homepage":"https://github.com/gwatts/go-coverage-action#readme","dependencies":{"@actions/core":"^1.10.1","@actions/github":"^6.0.0","execa":"^8.0.1"},"devDependencies":{"@vercel/ncc":"^0.38.1","eslint":"^8.57.0","prettier":"^3.2.5"},"volta":{"node":"20.11.1"}}');
+module.exports = JSON.parse('{"name":"go-coverage-action","version":"1.0.0","description":"Coverage reports for the Go programming language","main":"index.js","scripts":{"lint":"eslint .","prettier":"prettier -c ./*.js","prepare":"ncc build index.js -o dist --source-map --license licenses.txt","all":"npm run lint && npm run prepare"},"repository":{"type":"git","url":"git+https://github.com/gwatts/go-coverage-action.git"},"keywords":["GitHub","Actions","Golang","Go","Testing","Coverage"],"author":"gwatts","license":"MIT","bugs":{"url":"https://github.com/gwatts/go-coverage-action/issues"},"homepage":"https://github.com/gwatts/go-coverage-action#readme","dependencies":{"@actions/core":"1.10.1","@actions/github":"6.0.0","execa":"8.0.1"},"devDependencies":{"@semantic-release/github":"12.0.9","@vercel/ncc":"0.38.1","eslint":"8.57.0","prettier":"3.2.5","semantic-release":"25.0.8"},"volta":{"node":"20.11.1"}}');
 
 /***/ })
 

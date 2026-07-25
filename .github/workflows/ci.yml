@@ -2,6 +2,7 @@ name: "CI"
 on:
   workflow_dispatch:
   pull_request:
+    types: [opened, edited, synchronize]
   push:
     branches:
       - main
@@ -9,32 +10,135 @@ on:
 
 jobs:
   test:
+    name: Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 10
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: 1.26
+
+      - name: Run coverage
+        uses: ./
+        id: coverage
+        with:
+          working-directory: test-go-module
+          coverage-threshold: 0
+          cover-pkg: ./...
+
+      - name: Check coverage-pct
+        if: steps.coverage.outputs.coverage-pct < 40
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            core.setFailed('Incorrect coverage-pct: ${{ steps.coverage.outputs.coverage-pct }}')
+
+      - name: Check coverage-pct-0dp
+        if: steps.coverage.outputs.coverage-pct-0dp != '67'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            core.setFailed('Incorrect coverage-pct-0dp: ${{ steps.coverage.outputs.coverage-pct-0dp }}')
+
+      - name: Check coverage-pct-1dp
+        if: steps.coverage.outputs.coverage-pct-1dp != '66.7'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            core.setFailed('Incorrect coverage-pct-1dp: ${{ steps.coverage.outputs.coverage-pct-1dp }}')
+
+  check-dist:
+    name: Check dist dir
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 10
-    - uses: actions/setup-go@v5
-      with:
-        go-version: 1.22
-    - uses: ./
-      id: coverage
-      with:
-        working-directory: test-go-module
-        coverage-threshold: 0
-        cover-pkg: ./...
-    - if: steps.coverage.outputs.coverage-pct < 40
-      uses: actions/github-script@v7
-      with:
-        script: |
-          core.setFailed('Incorrect coverage-pct: ${{ steps.coverage.outputs.coverage-pct }}')
-    - if: steps.coverage.outputs.coverage-pct-0dp != '67'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          core.setFailed('Incorrect coverage-pct-0dp: ${{ steps.coverage.outputs.coverage-pct-0dp }}')
-    - if: steps.coverage.outputs.coverage-pct-1dp != '66.7'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          core.setFailed('Incorrect coverage-pct-1dp: ${{ steps.coverage.outputs.coverage-pct-1dp }}')
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set Nodejs
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Rebuild dist directory
+        run: npm run prepare
+
+      - name: Compare dist directories
+        run: |
+          if [ "$(git diff --ignore-space-at-eol dist/ | wc -l)" -gt "0" ]; then
+            echo "Detected uncommitted changes after build.  See status below:"
+            git diff
+            exit 1
+          fi
+        id: diff
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ failure() && steps.diff.conclusion == 'failure' }}
+        with:
+          name: dist
+          path: dist/
+
+  release:
+    name: Release
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create config
+        run: |
+          cat <<EOF > .releaserc.json
+          {
+            "branches": ["main"],
+            "plugins": [
+              "@semantic-release/commit-analyzer",
+              "@semantic-release/release-notes-generator",
+              "@semantic-release/github"
+            ]
+          }
+          EOF
+
+       - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+      - name: Update rolling release tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eou pipefail
+          git fetch --tags
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          ROLLING_TAG=$(echo $LATEST_TAG | grep -oE 'v[0-9]+')
+          echo "Latest tag: $LATEST_TAG"
+          echo "Rolling tag: $ROLLING_TAG"
+          git tag -f $ROLLING_TAG
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git $ROLLING_TAG --force
