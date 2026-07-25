@@ -12,45 +12,47 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-    - name: Checkout
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-        fetch-depth: 10
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 10
 
-    - name: Set up Go
-      uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-      with:
-        go-version: 1.22
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: 1.26
 
-    - name: Run coverage
-      uses: ./
-      id: coverage
-      with:
-        working-directory: test-go-module
-        coverage-threshold: 0
-        cover-pkg: ./...
+      - name: Run coverage
+        uses: ./
+        id: coverage
+        with:
+          working-directory: test-go-module
+          coverage-threshold: 0
+          cover-pkg: ./...
 
-    - name: Check coverage-pct
-      if: steps.coverage.outputs.coverage-pct < 40
-      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-      with:
-        script: |
-          core.setFailed('Incorrect coverage-pct: ${{ steps.coverage.outputs.coverage-pct }}')
+      - name: Check coverage-pct
+        if: steps.coverage.outputs.coverage-pct < 40
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            core.setFailed('Incorrect coverage-pct: ${{ steps.coverage.outputs.coverage-pct }}')
 
-    - name: Check coverage-pct-0dp
-      if: steps.coverage.outputs.coverage-pct-0dp != '67'
-      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-      with:
-        script: |
-          core.setFailed('Incorrect coverage-pct-0dp: ${{ steps.coverage.outputs.coverage-pct-0dp }}')
+      - name: Check coverage-pct-0dp
+        if: steps.coverage.outputs.coverage-pct-0dp != '67'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            core.setFailed('Incorrect coverage-pct-0dp: ${{ steps.coverage.outputs.coverage-pct-0dp }}')
 
-    - name: Check coverage-pct-1dp
-      if: steps.coverage.outputs.coverage-pct-1dp != '66.7'
-      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-      with:
-        script: |
-          core.setFailed('Incorrect coverage-pct-1dp: ${{ steps.coverage.outputs.coverage-pct-1dp }}')
+      - name: Check coverage-pct-1dp
+        if: steps.coverage.outputs.coverage-pct-1dp != '66.7'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            core.setFailed('Incorrect coverage-pct-1dp: ${{ steps.coverage.outputs.coverage-pct-1dp }}')
 
   check-dist:
     name: Check dist dir
