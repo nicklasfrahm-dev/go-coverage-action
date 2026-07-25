@@ -1,5 +1,8 @@
-name: 'Go Code Coverage Report'
+name: 'Report Go Code Coverage'
 description: 'Generates Go coverage reports without third party services'
+branding:
+  icon: 'award'
+  color: 'green'
 inputs:
   token:
     description: github token
