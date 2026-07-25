@@ -3,9 +3,11 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
     cooldown:
       default-days: 15
+    commit-message:
+      prefix: "fix(deps)"
     groups:
       actions:
         patterns:
@@ -14,9 +16,11 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
     cooldown:
       default-days: 15
+    commit-message:
+      prefix: "fix(deps)"
     groups:
       npm:
         patterns:
