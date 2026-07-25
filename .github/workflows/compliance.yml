@@ -1,0 +1,21 @@
+name: PR Title Compliance
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  check-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR Title
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          # Regex for: (feat|fix)(scope): description
+          # Requires scope in parenthesis.
+          # Example: feat(parser): something
+          # Example: fix(api): something
+          if [[ ! "$TITLE" =~ ^(feat|fix)(\([^)]+\)):.+$ ]]; then
+            echo "Error: PR title must follow conventional commit format with type 'feat' or 'fix' and a scope. (e.g., 'feat(scope): description')"
+            exit 1
+          fi
